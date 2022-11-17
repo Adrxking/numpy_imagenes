@@ -64,6 +64,18 @@ class BuildImage():
 
         return self.switch_np_and_image(final_image, 'image' if return_image is True else 'np')
     
+        """
+        @staticmethod
+          def mosaic(x = 10, y = 10, width = 10, height = 10):
+              total_width = x * width
+              total_height = y * height
+              _data = np.zeros((total_height, total_width, 3), dtype = np.uint8)
+              for i in range(0, total_width, width):
+                  for j in range(0, total_height, height):
+                      _data[j : j + height, i : i + width] =  (randint(0, 255), randint(0, 255), randint(0, 255))
+              return Image.fromarray(_data)
+        """
+    
     def redimensionar(self, width, height, new_image = None, return_image = True):
         """
         c) Implementa un método que redimensiona una imagen al ancho y alto especificado, este
@@ -103,13 +115,17 @@ class BuildImage():
         image = image.resize((self.image.width * height // self.image.height, height))
         return self.switch_np_and_image(image, 'image' if return_image is True else 'np')
     
-    def get_from_image(self, initial_hor, initial_ver, width, height, return_image = True):
+    def get_from_image(self, initial_hor, initial_ver, width, height, new_image = None, return_image = True):
         """
         f) Implementa un método que devuelva un trozo de una imagen especificando la posición
         horizontal y vertical y el ancho y el alto, si las dimensiones especificadas son superiores a la
         imagen original, debe devolver el recorte disponible.
         """
-        image = self.switch_np_and_image(self.image, 'np')
+        image = None
+        if (new_image is not None):
+            image = self.switch_np_and_image(new_image, 'np')
+        else:
+            image = self.switch_np_and_image(self.image, 'np')
         image = image[initial_ver:initial_ver+height, initial_hor:initial_hor+width]
         return self.switch_np_and_image(image, 'image' if return_image is True else 'np')
     
@@ -128,7 +144,7 @@ class BuildImage():
         
         new_image = None
         
-        if (vertically is True):
+        if (vertically is False):
             if image.height == second_image.height:
                 pass
             elif image.height > second_image.height:
@@ -190,34 +206,63 @@ class BuildImage():
 
         image = new_image
         return self.switch_np_and_image(image, 'image' if return_image is True else 'np')
-        
-    def i():
+    
+    @staticmethod
+    def insert_image(img_a, img_b, x, y):
         """
         i) Implementa un método que inserte una imagen dentro de otra imagen en la posición
         horizontal y vertical especificada. Si la imagen que se va a insertar no cabe entera, debe
         recortarla.
-        Ejemplo: La primera imagen se inserta en dos imágenes diferentes. En la primera imagen,
-        la posición de inserción especificada no permite insertar la imágen completa. En la segunda
-        imagen, la posición de inserción permite insertar la imagen de forma completa.
         """
+        if(x < 0): x = 0
+        if(y < 0): y = 0
+        arr_a = np.copy(np.asarray(img_a))
+        arr_b = np.asarray(img_b)
+        shape_y_a = y + arr_b.shape[0]
+        shape_x_a = x + arr_b.shape[1]
+        shape_y_b = arr_a.shape[0] - y
+        shape_x_b = arr_a.shape[1] - x
+        if(shape_x_a > arr_a.shape[1]): shape_x_a = arr_a.shape[1]
+        if(shape_y_a > arr_a.shape[0]): shape_y_a = arr_a.shape[0]
+        arr_a[y:shape_y_a,x:shape_x_a] = arr_b[0:shape_y_b,0:shape_x_b]
+        return Image.fromarray(arr_a)
+
+    @staticmethod
+    def insert_redim(img1, img2, pos_x, pos_y, ancho, alto):
+        img2 = Image.fromarray(Imagen.redim_image(np.asarray(img2), ancho, alto))
+        res = Imagen.insert_image(img1, img2, pos_x, pos_y)
+        return res
         
-    def h():
+    def i(first_image, second_image, x, y):
         """
         j) Implementa un método que inserte dentro de una imagen otra imagen en la posición
         horizontal y vertical especificada con el ancho y el alto especificado. Si la imagen que se va
         a insertar no cabe entera, debe recortarla.
         """
+        if(x < 0): x = 0
+        if(y < 0): y = 0
+        arr_a = np.copy(np.asarray(first_image))
+        arr_b = np.asarray(second_image)
+        shape_x_a = x + arr_b.shape[0]
+        shape_y_a = y + arr_b.shape[1]
+        shape_x_b = arr_a.shape[0] - x
+        shape_y_b = arr_a.shape[1] - y
+        if(shape_x_a > arr_a.shape[0]): shape_x_a = arr_a.shape[0]
+        if(shape_y_a > arr_a.shape[1]): shape_y_a = arr_a.shape[1]
+        arr_a[x:shape_x_a,y:shape_y_a] = arr_b[0:shape_x_b,0:shape_y_b]
+        return Image.fromarray(arr_a)
 
 
 img = BuildImage()
-img.image = img.set_new_image(100, 600, (100, 200, 50))
-img.image.save('cuadrado.png')
-img.image = img.set_images_stacked(150, 80, 3, 2)
+#img.image = img.set_new_image(100, 600, (100, 200, 50))
+# img.image.save('cuadrado.png')
+# img.image = img.set_images_stacked(150, 80, 3, 2)
 # img.image = img.redimensionar(100, 600)
 # img.image = img.redimensionar_ancho(70)
 # img.image = img.redimensionar_alto(120)
 # img.image.save('cuadrado.png')
-second_image = Image.open('cuadrado.png')
+# second_image = Image.open('cuadrado.png')
 # img.image = img.stack(second_image)
 # img.image = img.stack_2(second_image, None, False)
-img.image.save('cuadrado4.png')
+# img.image = img.get_from_image(100, 100, 2000, 2000)
+# img.image.save('cuadrado6.png')
